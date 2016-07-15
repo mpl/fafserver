@@ -25,9 +25,10 @@ import (
 const idstring = "http://golang.org/pkg/http/#ListenAndServe"
 
 var (
-	flagHost = flag.String("host", "", "Optional hostname to listen on. The port will still be random.")
-	flagDie  = flag.Duration("die", 24*time.Hour, "Die after the specified time.")
-	flagHelp = flag.Bool("h", false, "show this help")
+	flagHost  = flag.String("host", "", "Optional hostname to listen on. The port will still be random.")
+	flagDie   = flag.Duration("die", 24*time.Hour, "Die after the specified time.")
+	flagHelp  = flag.Bool("h", false, "show this help.")
+	flagForce = flag.Bool("f", false, "Disable $HOME protection.")
 )
 
 var (
@@ -213,6 +214,10 @@ func main() {
 	flag.Parse()
 	if *flagHelp {
 		usage()
+	}
+
+	if !*flagForce && filepath.Clean(rootdir) == filepath.Clean(os.Getenv("HOME")) {
+		log.Fatal("Refusing to serve in $HOME. Use -f to overrule.")
 	}
 
 	nargs := flag.NArg()
