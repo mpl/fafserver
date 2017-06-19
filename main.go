@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/mpl/basicauth"
+	"github.com/mpl/simpletls"
 )
 
 const idstring = "http://golang.org/pkg/http/#ListenAndServe"
@@ -205,8 +206,8 @@ func initUserPass() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	println("user: " + user)
-	println("password: " + pass)
+	fmt.Println("user: " + user)
+	fmt.Println("password: " + pass)
 }
 
 func main() {
@@ -235,13 +236,14 @@ func main() {
 		log.Printf("Server lifetime of %v is over, calling it quits now.", *flagDie)
 		os.Exit(0)
 	})
-	println("Starting to listen on: https://" + hostPort)
+	fmt.Println("Starting to listen on: https://" + hostPort)
 	fmt.Printf("Server will die in %v\n", *flagDie)
-	if err := http.ListenAndServeTLS(
-		hostPort,
-		filepath.Join(os.Getenv("HOME"), "keys", "cert.pem"),
-		filepath.Join(os.Getenv("HOME"), "keys", "key.pem"),
-		nil); err != nil {
+
+	listener, err := simpletls.Listen(hostPort)
+	if err != nil {
+		log.Fatalf("Failed to listen on %s: %v", hostPort, err)
+	}
+	if err := http.Serve(listener, nil); err != nil {
 		t.Stop()
 		log.Fatal(err)
 	}
